@@ -61,7 +61,7 @@ router.put("/:contactId", contactValidation, async (req, res, next) => {
 
 router.patch(
   "/:contactId/favorite",
-  contactFavoriteValidation,
+  contactValidation,
   async (req, res, next) => {
     const id = req.params.contactId;
     if (req.body.favorite === undefined) {
