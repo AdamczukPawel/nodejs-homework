@@ -1,18 +1,16 @@
-const express = require("express");
-const router = express.Router();
+import { Router } from "express";
 
-const {
-  contactValidation,
-  contactFavoriteValidation,
-} = require("../../validator");
-const {
+import { contactValidation } from "../../validator.js";
+import {
   listContacts,
   getContactById,
   addContact,
   removeContact,
   updateContact,
   updateFavorite,
-} = require("../../models/contacts");
+} from "../../models/contacts.js";
+
+const router = Router();
 
 router.get("/", async (req, res, next) => {
   const response = await listContacts();
@@ -76,4 +74,4 @@ router.patch(
   }
 );
 
-module.exports = router;
+export default router;
