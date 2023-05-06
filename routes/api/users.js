@@ -57,7 +57,9 @@ router.post("/login", userValidation, async (req, res, next) => {
     config.JWT_SECRET
   );
   user.token = token;
-  await res.json({
+
+  await user.save();
+  return res.json({
     status: "success",
     code: 200,
     data: {
@@ -72,13 +74,8 @@ router.post("/login", userValidation, async (req, res, next) => {
 
 router.get("/logout", auth, async (req, res) => {
   try {
-    const userId = req.user.id;
-    const user = await getUserById(userId);
-    if (!user) {
-      return res.status(401).json({ message: "Not authorized" });
-    }
-    user.token = null;
-    await user.save();
+    req.user.token = null;
+    await req.user.save();
     return res.status(204).end();
   } catch (error) {
     console.error(error);
@@ -86,23 +83,14 @@ router.get("/logout", auth, async (req, res) => {
 });
 
 router.get("/current", auth, async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-    const user = await getUserById(userId);
-    if (!user) {
-      return res.status(401).json({ message: "Not authorized" });
-    }
-    res.json({
-      status: "success",
-      code: 200,
-      data: {
-        email: user.email,
-        subscription: user.subscription,
-      },
-    });
-  } catch (error) {
-    console.error(error);
-  }
+  res.json({
+    status: "success",
+    code: 200,
+    data: {
+      email: req.user.email,
+      subscription: req.user.subscription,
+    },
+  });
 });
 
 export default router;
