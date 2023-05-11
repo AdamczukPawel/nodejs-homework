@@ -1,7 +1,7 @@
 import passport from "passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
-import { config } from "./config.js";
-import User from "./models/userModel.js";
+import { config } from "../config.js";
+import User from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 
 const strategyOptions = {
