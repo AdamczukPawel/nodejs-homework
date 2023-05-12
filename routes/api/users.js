@@ -14,9 +14,12 @@ import {
   updateAvatar,
 } from "../../models/users.js";
 import { config } from "../../config.js";
-import { UPLOAD_DIR, upload } from "../../middlewares/upload.js";
-
-const avatarStore = path.join(process.cwd(), "tmp");
+import {
+  UPLOAD_DIR,
+  AVATAR_DIR,
+  upload,
+  shortAvatarURL,
+} from "../../middlewares/upload.js";
 
 const router = Router();
 
@@ -105,24 +108,25 @@ router.patch(
   auth,
   upload.single("avatar"),
   async (req, res, next) => {
+    const { path: tempName, originalname } = req.file;
+    const avatarURL = path.join(AVATAR_DIR, originalname);
+    const { email } = req.user;
+    Jimp.read(tempName)
+      .then((avatar) => {
+        return avatar.resize(250, 250).write(AVATAR_DIR);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
     try {
-      const { _id } = req.user;
-      const { path: tempName, originalname } = req.file;
-      const fileName = path.join(UPLOAD_DIR, originalname);
-      await fs.rename(tempName, fileName);
-      const img = await Jimp.read(fileName);
-      await img.autocrop().cover(250, 250).quality(60).writeAsync(fileName);
-      await fs.rename(
-        fileName,
-        path.join(process.cwd(), "public/avatars", originalname)
-      );
-      const shortAvatarURL = avatarURL.replace(/\\/g, "/");
-      const user = await updateAvatar(_id, shortAvatarURL);
-      res.status(200).json(user);
+      await fs.rename(tempName, avatarURL);
+      await updateAvatar(email, shortAvatarURL(avatarURL));
     } catch (error) {
+      await fs.unlink(tempName);
       next(error);
       return res.status(500).json({ message: "Server error" });
     }
+    res.status(200).json({ avatarURL: shortAvatarURL(avatarURL) });
   }
 );
 

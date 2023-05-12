@@ -1,8 +1,10 @@
 import { join } from "node:path";
 import multer from "multer";
+import path from "node:path";
 
-export const PUBLIC_DIR = join(process.cwd(), "public");
-export const UPLOAD_DIR = join(process.cwd(), "tmp");
+export const PUBLIC_DIR = path.join(process.cwd(), "public");
+export const UPLOAD_DIR = path.join(process.cwd(), "tmp");
+export const AVATAR_DIR = path.join(process.cwd(), "public", "avatars");
 
 export const shortAvatarURL = (avatarURL) =>
   path.relative(PUBLIC_DIR, avatarURL);
@@ -21,6 +23,4 @@ export const storage = multer.diskStorage({
   limits: { fileSize: 1_000_000 },
 });
 
-export const upload = multer({
-  storage: storage,
-});
+export const upload = multer({ storage });

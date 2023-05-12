@@ -1,7 +1,7 @@
 import express from "express";
 import logger from "morgan";
 import cors from "cors";
-import path from "path";
+import path from "node:path";
 
 import contactsRouter from "./routes/api/contacts.js";
 import usersRouter from "./routes/api/users.js";

@@ -49,6 +49,6 @@ export const passwordValidator = async (password, userPassword) => {
   return isValidPassword;
 };
 
-export const updateAvatar = async (_id, avatarURL) => {
-  User.findByIdAndUpdate(_id, { avatarURL });
+export const updateAvatar = async (email, avatarURL) => {
+  User.findOneAndUpdate({ email }, { avatarURL });
 };
