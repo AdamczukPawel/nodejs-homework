@@ -1,15 +1,25 @@
 import { Router } from "express";
 import jwt from "jsonwebtoken";
+import path from "path";
+import fs from "fs/promises";
+import Jimp from "jimp";
 
 import { userValidation } from "../../validator.js";
-import { auth } from "../../middlewares.js";
+import { auth } from "../../middlewares/authentication.js";
 import {
   createUser,
   getUserById,
   getUserByEmail,
   passwordValidator,
+  updateAvatar,
 } from "../../models/users.js";
 import { config } from "../../config.js";
+import {
+  UPLOAD_DIR,
+  AVATAR_DIR,
+  upload,
+  shortAvatarURL,
+} from "../../middlewares/upload.js";
 
 const router = Router();
 
@@ -92,5 +102,31 @@ router.get("/current", auth, async (req, res, next) => {
     },
   });
 });
+
+router.patch(
+  "/avatars",
+  auth,
+  upload.single("avatar"),
+  async (req, res, next) => {
+    const { path: tempName, originalname } = req.file;
+    const avatarURL = path.join(AVATAR_DIR, originalname);
+    const { email } = req.user;
+    Jimp.read(tempName)
+      .then((avatar) => {
+        return avatar.resize(250, 250).write(AVATAR_DIR);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    try {
+      await fs.rename(tempName, avatarURL);
+      await updateAvatar(email, shortAvatarURL(avatarURL));
+    } catch (error) {
+      await fs.unlink(tempName);
+      return res.status(500).json({ message: "Server error" });
+    }
+    res.status(200).json({ avatarURL: shortAvatarURL(avatarURL) });
+  }
+);
 
 export default router;
