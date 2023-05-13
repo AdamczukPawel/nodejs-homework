@@ -123,7 +123,6 @@ router.patch(
       await updateAvatar(email, shortAvatarURL(avatarURL));
     } catch (error) {
       await fs.unlink(tempName);
-      next(error);
       return res.status(500).json({ message: "Server error" });
     }
     res.status(200).json({ avatarURL: shortAvatarURL(avatarURL) });
