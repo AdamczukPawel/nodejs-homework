@@ -12,6 +12,7 @@ import {
   getUserByEmail,
   passwordValidator,
   updateAvatar,
+  verifyUser,
 } from "../../models/users.js";
 import { config } from "../../config.js";
 import {
@@ -20,6 +21,7 @@ import {
   upload,
   shortAvatarURL,
 } from "../../middlewares/upload.js";
+import { sendVerificationEmail } from "../../middlewares/sendgrid.js";
 
 const router = Router();
 
@@ -44,6 +46,8 @@ router.post("/signup", userValidation, async (req, res, next) => {
       data: {
         email: user.email,
         subscription: user.subscription,
+        avatarURL: user.avatarURL,
+        verificationToken: user.verificationToken,
       },
     });
   } catch (error) {
@@ -128,5 +132,36 @@ router.patch(
     res.status(200).json({ avatarURL: shortAvatarURL(avatarURL) });
   }
 );
+
+router.get("/verify/:verificationToken", async (req, res, next) => {
+  const { verificationToken } = req.params;
+  try {
+    const verifiedUser = await verifyUser(verificationToken);
+    verifiedUser
+      ? res.status(200).json({ message: "Verification successful" })
+      : res.status(404).json({ message: "User not found" });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+router.post("/verify/", async (req, res, next) => {
+  const { email } = req.body;
+  try {
+    const user = await getUserByEmail(email);
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+    } else if (user.verify) {
+      res.status(400).json({
+        message: "Verification has already been passed",
+      });
+      return;
+    }
+    await sendVerificationEmail(email, user.verificationToken);
+    res.status(200).json({ message: "Verification email sent" });
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 export default router;
