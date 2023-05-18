@@ -136,9 +136,7 @@ router.patch(
 router.get("/verify/:verificationToken", async (req, res, next) => {
   const { verificationToken } = req.params;
   try {
-    console.log("verificationToken:", verificationToken);
     const verifiedUser = await verifyUser(verificationToken);
-    console.log("verifiedUser: ", verifiedUser);
     verifiedUser
       ? res.status(200).json({ message: "Verification successful" })
       : res.status(404).json({ message: "User not found" });
